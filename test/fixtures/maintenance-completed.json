@@ -1,0 +1,35 @@
+{
+  "meta": {
+    "unsubscribe": "https://example.statuspage.io/?unsubscribe=xxxxxxxxxxxx",
+    "documentation": "https://help.statuspage.io/knowledge_base/topics/webhook-notifications"
+  },
+  "page": {
+    "id": "j2mfxwj97wnj",
+    "status_indicator": "none",
+    "status_description": "All Systems Operational"
+  },
+  "incident": {
+    "name": "Scheduled database maintenance",
+    "status": "completed",
+    "created_at": "2026-08-16T09:00:00.000-07:00",
+    "updated_at": "2026-08-17T02:00:00.000-07:00",
+    "monitoring_at": null,
+    "resolved_at": "2026-08-17T02:00:00.000-07:00",
+    "impact": "maintenance",
+    "shortlink": "http://stspg.io/example2",
+    "id": "mkhbwn21v5qz",
+    "page_id": "j2mfxwj97wnj",
+    "scheduled_for": "2026-08-17T01:00:00.000-07:00",
+    "scheduled_until": "2026-08-17T02:00:00.000-07:00",
+    "incident_updates": [
+      {
+        "body": "The scheduled maintenance has been completed.",
+        "created_at": "2026-08-17T02:00:00.000-07:00",
+        "display_at": "2026-08-17T02:00:00.000-07:00",
+        "status": "completed",
+        "id": "drfcwbnpxnr8",
+        "incident_id": "mkhbwn21v5qz"
+      }
+    ]
+  }
+}

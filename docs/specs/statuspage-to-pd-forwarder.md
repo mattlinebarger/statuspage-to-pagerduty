@@ -1,6 +1,6 @@
 # Spec: Statuspage to PagerDuty Event Orchestration Forwarder
 
-**Repo:** atlassian-statuspages-to-pd-event-orch
+**Repo:** statuspage-to-pagerduty
 **Created:** 2026-08-17
 
 ## 1. Problem
@@ -27,7 +27,7 @@ Atlassian Statuspage lets subscribers register a webhook URL, but the payload it
 
 A single Vercel serverless function (Node runtime, TypeScript, no framework) at `api/webhook.ts`:
 
-1. **Receive** a POST from Statuspage. If `WEBHOOK_SECRET` is set and the request's `?secret=` query param does not match, return 401. If the body does not parse as JSON or contains neither an `incident` nor a `component_update` key, return 400.
+1. **Receive** a POST from Statuspage. If `WEBHOOK_SECRET` is unset, return 500 naming the missing variable. If the request's `?secret=` query param does not match it, return 401. If the body does not parse as JSON or contains neither an `incident` nor a `component_update` key, return 400.
 2. **Classify** the payload:
    - `incident` present with `type: incident` semantics (statuses `investigating`, `identified`, `monitoring`, `resolved`): incident flow.
    - `incident` present with maintenance statuses (`scheduled`, `in_progress`, `verifying`, `completed`): maintenance flow.
@@ -45,7 +45,9 @@ A single Vercel serverless function (Node runtime, TypeScript, no framework) at 
 
 **Trade-off 1: 502 on forward failure vs. always 200.** Repeated non-2xx responses risk Statuspage deactivating the subscription, but returning 200 on a failed forward silently drops events with no external signal. Choosing 502: a transient PD outage causing a few failed deliveries is visible in Vercel logs and recoverable; silent loss is not. The single retry keeps this rare.
 
-**Trade-off 2: shared-secret query param vs. open endpoint.** Statuspage webhooks are unsigned, so the only auth available is what we embed in the subscription URL. A `?secret=` param leaks into Statuspage's stored subscriber record but blocks drive-by forgery. Worst case on leak is spoofed events on one routing key, and the secret is rotatable. Payload-shape validation alone was rejected because a forged payload is trivially copied from Atlassian's public docs. The secret is optional (enforced only when `WEBHOOK_SECRET` is set) so the zero-config path still works.
+**Trade-off 2: shared-secret query param vs. open endpoint.** Statuspage webhooks are unsigned, so the only auth available is what we embed in the subscription URL. A `?secret=` param leaks into Statuspage's stored subscriber record but blocks drive-by forgery. Worst case on leak is spoofed events on one routing key, and the secret is rotatable. Payload-shape validation alone was rejected because a forged payload is trivially copied from Atlassian's public docs. The secret is required. It was optional in the original design, but an open endpoint that anyone can use to page an on-call responder is a bad default, so the setup cost of generating one string wins.
+
+A static `index.html` is served at the deployment root so that visiting the base URL confirms the deploy worked instead of returning Vercel's 404.
 
 ## 5. Alternatives Considered
 
@@ -60,7 +62,8 @@ A single Vercel serverless function (Node runtime, TypeScript, no framework) at 
 - WHEN a maintenance webhook with status `completed` arrives THE SYSTEM SHALL send `event_action: resolve`.
 - WHEN a component update webhook with `new_status: operational` arrives THE SYSTEM SHALL send `event_action: resolve` with `dedup_key: statuspage-component-{component.id}`.
 - GIVEN `WEBHOOK_SECRET=abc` is set WHEN a request arrives without `?secret=abc` THEN the function returns 401 and nothing is sent to PagerDuty.
-- GIVEN `WEBHOOK_SECRET` is unset WHEN a valid payload arrives with no secret param THEN it is forwarded normally.
+- WHEN `WEBHOOK_SECRET` is unset THE SYSTEM SHALL return 500 with a message naming the missing variable, without calling PagerDuty.
+- WHEN the deployment's root URL is fetched THE SYSTEM SHALL return a 200 HTML page identifying the service, not a 404.
 - WHEN the request body is not JSON, or is JSON with neither `incident` nor `component_update` THE SYSTEM SHALL return 400 and send nothing to PagerDuty.
 - WHEN the PagerDuty enqueue call fails twice (initial attempt plus one retry) THE SYSTEM SHALL return 502 and log the PagerDuty error body.
 - WHEN `PAGERDUTY_ROUTING_KEY` is unset THE SYSTEM SHALL return 500 with a message naming the missing variable, without calling PagerDuty.
@@ -113,7 +116,7 @@ Expected: 202 with a mocked or test routing key, 401 when `WEBHOOK_SECRET` is se
 ## Security and Privacy
 
 - **Data handled:** public status page incident data (incident names, statuses, timestamps, component names). No PII beyond what a status page publishes publicly.
-- **Credentials:** `PAGERDUTY_ROUTING_KEY` (a PagerDuty Events API routing key) and optional `WEBHOOK_SECRET`, both supplied as Vercel environment variables. Never logged, never echoed in responses, never committed. `.env` local development follows the same rule via `.gitignore`.
+- **Credentials:** `PAGERDUTY_ROUTING_KEY` (a PagerDuty Events API routing key) and `WEBHOOK_SECRET`, both required and supplied as Vercel environment variables. Never logged, never echoed in responses, never committed. `.env` local development follows the same rule via `.gitignore`.
 - **What leaves the deployment:** the transformed event to `events.pagerduty.com/v2/enqueue` only. No other outbound calls.
 - **Blast radius on failure:** a leaked routing key allows spoofed or resolved events on one PagerDuty service/orchestration. Mitigation: keys are rotatable in PagerDuty, and the optional shared secret blocks unauthenticated spoofing at this endpoint. A compromised deployment cannot read PagerDuty data; routing keys are write-only.
 
