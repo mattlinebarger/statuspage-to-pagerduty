@@ -14,7 +14,7 @@ Severity mapping: incident impact `critical` -> `critical`, `major` -> `error`, 
 
 ## Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmattlinebarger%2Fatlassian-statuspages-to-pd-event-orch&project-name=statuspage-to-pagerduty&repository-name=statuspage-to-pagerduty&env=PAGERDUTY_ROUTING_KEY,WEBHOOK_SECRET&envDescription=PagerDuty%20Events%20API%20v2%20routing%20key%2C%20and%20a%20random%20string%20used%20as%20the%20webhook%20secret)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmattlinebarger%2Fstatuspage-to-pagerduty&project-name=statuspage-to-pagerduty&repository-name=statuspage-to-pagerduty&env=PAGERDUTY_ROUTING_KEY,WEBHOOK_SECRET&envDescription=PagerDuty%20Events%20API%20v2%20routing%20key%2C%20and%20a%20random%20string%20used%20as%20the%20webhook%20secret)
 
 The deploy flow suggests `statuspage-to-pagerduty` as the project name, which becomes your `https://statuspage-to-pagerduty-<something>.vercel.app` domain. Change it on the clone screen if you want a different name, or set a custom domain later in the Vercel project settings.
 

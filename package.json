@@ -1,5 +1,5 @@
 {
-  "name": "atlassian-statuspages-to-pd-event-orch",
+  "name": "statuspage-to-pagerduty",
   "version": "1.0.0",
   "private": true,
   "type": "module",

@@ -1,6 +1,6 @@
 # Spec: Statuspage to PagerDuty Event Orchestration Forwarder
 
-**Repo:** atlassian-statuspages-to-pd-event-orch
+**Repo:** statuspage-to-pagerduty
 **Created:** 2026-08-17
 
 ## 1. Problem
