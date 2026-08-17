@@ -13,7 +13,8 @@ The authoritative design document is `docs/specs/statuspage-to-pd-forwarder.md`.
 - `api/webhook.ts` is the only HTTP entry point (Vercel Node runtime, TypeScript, no framework). It handles auth (optional `?secret=` check against `WEBHOOK_SECRET`), request validation, and the outbound call to PagerDuty with one retry.
 - `lib/` holds the payload classification and PD-CEF mapping as pure functions so they can be unit tested without HTTP. Payload classification is three-way: incident, maintenance (distinguished from incidents by status values like `scheduled`/`in_progress`/`completed`), and component update.
 - Lifecycle is driven by `dedup_key`: `statuspage-{incident.id}` for incidents/maintenances, `statuspage-component-{component.id}` for component updates. Resolve fires on incident `resolved`, maintenance `completed`, or component `new_status: operational`; everything else triggers. Filtering beyond that is deliberately left to PagerDuty Event Orchestration, do not add suppression logic here.
-- Configuration is entirely env vars: `PAGERDUTY_ROUTING_KEY` (required), `WEBHOOK_SECRET` (optional). One deployment serves one routing key by design.
+- Configuration is entirely env vars: `PAGERDUTY_ROUTING_KEY` and `WEBHOOK_SECRET`, both required. One deployment serves one routing key by design.
+- `index.html` at the repo root is served statically at `/` so the base URL confirms the deploy instead of 404ing.
 - Test fixtures in `test/fixtures/` are sample Statuspage payloads taken from Atlassian docs. Never use real routing keys in tests or fixtures.
 
 ## Commands

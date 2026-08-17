@@ -20,7 +20,12 @@ export default async function handler(
   }
 
   const secret = process.env.WEBHOOK_SECRET;
-  if (secret && req.query.secret !== secret) {
+  if (!secret) {
+    return res
+      .status(500)
+      .json({ error: "WEBHOOK_SECRET environment variable is not set" });
+  }
+  if (req.query.secret !== secret) {
     return res.status(401).json({ error: "Invalid or missing secret" });
   }
 

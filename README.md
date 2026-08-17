@@ -14,19 +14,21 @@ Severity mapping: incident impact `critical` -> `critical`, `major` -> `error`, 
 
 ## Deploy
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmattlinebarger%2Fatlassian-statuspages-to-pd-event-orch&env=PAGERDUTY_ROUTING_KEY&envDescription=PagerDuty%20Events%20API%20v2%20routing%20key%20(integration%20key))
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmattlinebarger%2Fatlassian-statuspages-to-pd-event-orch&project-name=statuspage-to-pagerduty&repository-name=statuspage-to-pagerduty&env=PAGERDUTY_ROUTING_KEY,WEBHOOK_SECRET&envDescription=PagerDuty%20Events%20API%20v2%20routing%20key%2C%20and%20a%20random%20string%20used%20as%20the%20webhook%20secret)
+
+The deploy flow suggests `statuspage-to-pagerduty` as the project name, which becomes your `https://statuspage-to-pagerduty-<something>.vercel.app` domain. Change it on the clone screen if you want a different name, or set a custom domain later in the Vercel project settings.
 
 1. In PagerDuty, get an Events API v2 routing key. For Event Orchestration: **Automation > Event Orchestration > your orchestration > Global Orchestration Key**. A service-level Events API v2 integration key also works.
 2. Deploy this repo to Vercel with the button above, or fork and import it. Set the environment variable:
    - `PAGERDUTY_ROUTING_KEY` (required): the routing key from step 1.
-   - `WEBHOOK_SECRET` (optional but recommended): any random string. When set, requests must include it as a `?secret=` query parameter or they get a 401.
+   - `WEBHOOK_SECRET` (required): any random string, for example from `openssl rand -hex 16`. Requests must include it as a `?secret=` query parameter or they get a 401. Statuspage webhooks are unsigned, so this is the only thing stopping strangers from sending fake events to your PagerDuty service.
 3. Subscribe to the status page. On the status page you want to watch, open the **Subscribe** menu, choose the webhook option, and enter your endpoint URL:
 
    ```
    https://your-app.vercel.app/api/webhook?secret=your-secret-here
    ```
 
-   Omit the `?secret=` part if you did not set `WEBHOOK_SECRET`. The status page must have webhook notifications enabled by its owner. If there is no webhook tab in the subscribe menu, the page does not offer webhooks and email is your only option.
+   The status page must have webhook notifications enabled by its owner. If there is no webhook tab in the subscribe menu, the page does not offer webhooks and email is your only option.
 
 4. Trigger or wait for an incident on the watched page and confirm the event arrives in PagerDuty.
 
@@ -47,9 +49,9 @@ npx vercel dev
 ```
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" -X POST "http://localhost:3000/api/webhook" -H "Content-Type: application/json" -d @test/fixtures/incident-investigating.json
+curl -s -o /dev/null -w "%{http_code}\n" -X POST "http://localhost:3000/api/webhook?secret=your-secret-here" -H "Content-Type: application/json" -d @test/fixtures/incident-investigating.json
 ```
 
-Expect `202` when `PAGERDUTY_ROUTING_KEY` is set (this sends a real event to that key), `500` when it is not, `401` when `WEBHOOK_SECRET` is set and the secret param is missing.
+Expect `202` when both env vars are set (this sends a real event to that routing key), `500` when either is missing, `401` when the secret param is wrong or missing.
 
 Design details live in [docs/specs/statuspage-to-pd-forwarder.md](docs/specs/statuspage-to-pd-forwarder.md).
