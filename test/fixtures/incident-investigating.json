@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "unsubscribe": "https://example.statuspage.io/?unsubscribe=xxxxxxxxxxxx",
+    "documentation": "https://help.statuspage.io/knowledge_base/topics/webhook-notifications"
+  },
+  "page": {
+    "id": "j2mfxwj97wnj",
+    "status_indicator": "critical",
+    "status_description": "Major System Outage"
+  },
+  "incident": {
+    "name": "Example API is down",
+    "status": "investigating",
+    "created_at": "2026-08-17T10:00:00.000-07:00",
+    "updated_at": "2026-08-17T10:00:00.000-07:00",
+    "monitoring_at": null,
+    "resolved_at": null,
+    "impact": "critical",
+    "shortlink": "http://stspg.io/example1",
+    "id": "lbkhbwn21v5q",
+    "page_id": "j2mfxwj97wnj",
+    "incident_updates": [
+      {
+        "body": "We are investigating elevated error rates on the API.",
+        "created_at": "2026-08-17T10:00:00.000-07:00",
+        "display_at": "2026-08-17T10:00:00.000-07:00",
+        "status": "investigating",
+        "id": "drfcwbnpxnr6",
+        "incident_id": "lbkhbwn21v5q"
+      }
+    ]
+  }
+}
